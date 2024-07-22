@@ -130,6 +130,15 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
 
     """
 
+    brain_dt = [dt.lower() for dt in brain_dt]
+
+    lesion_dt = [dt.lower() for dt in lesion_dt]
+
+    print("brain_dt: ", brain_dt)
+    print("lesion_dt: ", lesion_dt)
+
+
+
     soft = soft.lower()
 
     ssoft = soft.split("_")
@@ -144,9 +153,6 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
 
     if 'noseg' in ssoft:
         new_ssoft.remove('noseg')
-
-    if 't1' in ssoft:
-        new_ssoft.remove('t1')
 
     if 'native' in ssoft:
         new_ssoft.remove('native')
@@ -242,8 +248,20 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
     # soft
     wf_name += "_{}".format(soft)
 
-    if 't1' in ssoft:
+    if 'md' in lesion_dt:
+        wf_name += "_angio"
+
+    if 'flair' in lesion_dt:
+        wf_name += "_CT"
+
+    if len(brain_dt) != 0:
+        wf_name += "_segbrain"
+
+    if 't1' in brain_dt:
         wf_name += "_t1"
+
+    if 't2' in brain_dt:
+        wf_name += "_t2"
 
     if mask_file is not None:
         wf_name += "_mask"
@@ -374,7 +392,7 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
         else:
             space = "native"
 
-        if "t1" in ssoft:
+        if "t1" in brain_dt:
             segment_pnh_pipe = create_full_T1_ants_subpipes(
                 params_template=params_template,
                 params_template_aladin=params_template_aladin,
@@ -392,28 +410,24 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
 
     # T1 (mandatory, always added)
     # T2 is optional, if "_T1" is added in the -soft arg
-    if 't1' in ssoft:
+    if 't1' in brain_dt:
         output_query['T1'] = {
             "datatype": "anat", "suffix": "T1w",
             "extension": ["nii", ".nii.gz"]}
 
-    else:
-        output_query['T1'] = {
-            "datatype": "anat", "suffix": "T1w",
-            "extension": ["nii", ".nii.gz"]}
-
+    if 't2' in brain_dt:
         output_query['T2'] = {
             "datatype": "anat", "suffix": "T2w",
             "extension": ["nii", ".nii.gz"]}
 
     # FLAIR is optional, if "_FLAIR" is added in the -soft arg
-    if 'flair' in ssoft:
+    if 'flair' in lesion_dt:
         output_query['FLAIR'] = {
             "datatype": "anat", "suffix": "FLAIR",
             "extension": ["nii", ".nii.gz"]}
 
     # MD and b0mean are optional, if "_MD" is added in the -soft arg
-    if 'md' in ssoft:
+    if 'md' in lesion_dt:
         output_query['MD'] = {
             "datatype": "dwi", "acquisition": "MD", "suffix": "dwi",
             "extension": ["nii", ".nii.gz"]}
@@ -438,15 +452,20 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
     main_workflow.connect(datasource, 'T1',
                           segment_pnh_pipe, 'inputnode.list_T1')
 
-    if "t1" not in ssoft:
+    if "t1" in brain_dt:
+        main_workflow.connect(datasource, 'T1',
+                              segment_pnh_pipe, 'inputnode.list_T1')
+
+    if "t2" in brain_dt:
         main_workflow.connect(datasource, 'T2',
                               segment_pnh_pipe, 'inputnode.list_T2')
-    elif "t1" in ssoft and "spm" in ssoft:
+
+    elif "t1" in brain_dt and "spm" in ssoft:
         # cheating using T2 as T1
         main_workflow.connect(datasource, 'T1',
                               segment_pnh_pipe, 'inputnode.list_T2')
 
-    if "flair" in ssoft:
+    if "flair" in lesion_dt:
         if "transfo_FLAIR_pipe" in params.keys():
             print("Found transfo_FLAIR_pipe")
 
@@ -454,15 +473,16 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
             params=parse_key(params, "transfo_FLAIR_pipe"),
             params_template=params_template)
 
-        if "t1" in ssoft:
+        if "t1" in brain_dt and "t2" in brain_dt:
+            main_workflow.connect(
+                segment_pnh_pipe, "debias.t1_debiased_file",
+                transfo_FLAIR_pipe, 'inputnode.orig_T1')
+
+        elif "t1" in brain_dt:
+
             main_workflow.connect(
                 segment_pnh_pipe,
                 "short_preparation_pipe.outputnode.preproc_T1",
-                transfo_FLAIR_pipe, 'inputnode.orig_T1')
-
-        else:
-            main_workflow.connect(
-                segment_pnh_pipe, "debias.t1_debiased_file",
                 transfo_FLAIR_pipe, 'inputnode.orig_T1')
 
         main_workflow.connect(
@@ -472,7 +492,7 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
         main_workflow.connect(datasource, ('FLAIR', get_first_elem),
                               transfo_FLAIR_pipe, 'inputnode.FLAIR')
 
-    if 'md' in ssoft:
+    if 'md' in lesion_dt:
 
         if "transfo_MD_pipe" in params.keys():
             print("Found transfo_MD_pipe")
@@ -540,16 +560,18 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
             pref_deriv = "sub-%(sub)s_ses-%(ses)s"
             parse_str = r"sub-(?P<sub>\w*)_ses-(?P<ses>\w*)_.*"
 
-        rename_all_brain_derivatives(params, main_workflow, segment_pnh_pipe,
-                               datasink, pref_deriv, parse_str, space, ssoft)
+        rename_all_brain_derivatives(
+            params, main_workflow, segment_pnh_pipe,
+            datasink, pref_deriv, parse_str, space, ssoft,
+            brain_dt)
 
-        if 'flair' in ssoft:
+        if 'flair' in lesion_dt:
 
             main_workflow.connect(
                 transfo_FLAIR_pipe, 'outputnode.norm_FLAIR',
                 datasink, '@norm_flair')
 
-        if 'md' in ssoft:
+        if 'md' in lesion_dt:
 
             main_workflow.connect(
                 transfo_FLAIR_pipe, 'outputnode.norm_better_MD',
@@ -606,6 +628,21 @@ def main():
                         type=str, nargs='+', help="Subjects", required=False)
     parser.add_argument("-sessions", "-ses", dest="ses",
                         type=str, nargs='+', help="Sessions", required=False)
+
+
+    parser.add_argument("-brain_datatypes", "-brain_dt", "-brain",
+                        dest="brain_dt", type=str,
+                        default=['T1'], nargs='+',
+                        help="MRI Brain Datatypes (T1, T2)",
+                        required=False)
+
+    parser.add_argument("-lesion_datatypes", "-lesion_dt", "-lesion",
+                        dest="lesion_dt", type=str,
+                        default=['T1'], nargs='+',
+                        help="MRI Brain Datatypes (T1, petra, CT)",
+                        required=False)
+
+
     parser.add_argument("-acquisitions", "-acq", dest="acq", type=str,
                         nargs='+', default=None, help="Acquisitions")
     parser.add_argument("-records", "-rec", dest="rec", type=str, nargs='+',
@@ -652,6 +689,8 @@ def main():
         species=args.species,
         subjects=args.sub,
         sessions=args.ses,
+        brain_dt=args.brain_dt,
+        lesion_dt=args.lesion_dt,
         acquisitions=args.acq,
         reconstructions=args.rec,
         params_file=args.params_file,
