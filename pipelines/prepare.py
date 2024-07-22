@@ -103,7 +103,7 @@ def create_short_preparation_FLAIR_pipe(params,
             fields=['coreg_FLAIR']),
         name='outputnode')
 
-    data_preparation_pipe.connect(align_FLAIR_on_T1, 'out_file',
+    data_preparation_pipe.connect(align_FLAIR_on_T1, 'res_file',
                                   outputnode, 'coreg_FLAIR')
 
     return data_preparation_pipe
