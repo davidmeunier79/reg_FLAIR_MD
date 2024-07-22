@@ -7,8 +7,9 @@ import nipype.interfaces.fsl as fsl
 from macapype.utils.utils_nodes import NodeParams
 from macapype.utils.misc import parse_key
 
-from nodes.prepare import reg_aladin_dirty
+#from nodes.prepare import reg_aladin_dirty
 
+from nipype.interfaces.niftyreg.reg import RegAladin
 
 ###############################################################################
 def create_short_preparation_FLAIR_pipe(params,
@@ -78,22 +79,20 @@ def create_short_preparation_FLAIR_pipe(params,
 
     elif "reg_aladin_FLAIR_on_T1" in params.keys():
         print("in reg_aladin_FLAIR_on_T1")
+
         align_FLAIR_on_T1 = pe.Node(
-            niu.Function(
-                input_names=["reference", "in_file"],
-                output_names=["out_file"],
-                function=reg_aladin_dirty),
-            name="reg_aladin_FLAIR_on_T1")
+            interface=RegAladin(),
+            name="align_ct_on_T1")
 
         # TODO
         # align_FLAIR_on_T1 = pe.Node(reg.RegAladin(),
         # name="reg_aladin_FLAIR_on_T1")
 
         data_preparation_pipe.connect(inputnode, 'orig_T1',
-                                      align_FLAIR_on_T1, 'reference')
+                                      align_FLAIR_on_T1, 'ref_file')
 
         data_preparation_pipe.connect(inputnode, 'FLAIR',
-                                      align_FLAIR_on_T1, 'in_file')
+                                      align_FLAIR_on_T1, 'flo_file')
     else:
         print("no align_FLAIR_on_T1 or reg_aladin_FLAIR_on_T1, breaking")
         exit(0)
