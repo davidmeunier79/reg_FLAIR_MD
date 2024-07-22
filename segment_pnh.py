@@ -558,10 +558,10 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
             pref_deriv = "sub-%(sub)s_ses-%(ses)s"
             parse_str = r"sub-(?P<sub>\w*)_ses-(?P<ses>\w*)_.*"
 
-        #rename_all_brain_derivatives(
-            #params, main_workflow, segment_pnh_pipe,
-            #datasink, pref_deriv, parse_str, space, ssoft,
-            #brain_dt)
+        rename_all_brain_derivatives(
+            params, main_workflow, segment_pnh_pipe,
+            datasink, pref_deriv, parse_str, pad, ssoft,
+            brain_dt)
 
         if 'flair' in lesion_dt:
 
