@@ -189,6 +189,25 @@ def create_short_preparation_MD_pipe(params,
     data_preparation_pipe.connect(inputnode, 'b0mean',
                                     align_b0mean_on_T2, 'flo_file')
 
+    # apply transfo to MD
+    align_MD_on_T2_with_b0 = pe.Node(RegResample(pad_val=0.0),
+        name="align_MD_on_T2_with_b0")
+
+    # transfo
+    data_preparation_pipe.connect(
+        align_b0mean_on_T2, 'aff_file',
+        align_MD_on_T2_with_b0, 'trans_file')
+
+    data_preparation_pipe.connect(
+        inputnode, 'MD',
+        align_MD_on_T2_with_b0, "flo_file")
+
+    data_preparation_pipe.connect(
+        inputnode, 'SS_T2',
+        align_MD_on_T2_with_b0, "ref_file")
+
+    # adding an extra reg_aladin (better ?)
+
     align_b0mean_on_T2_2 = pe.Node(
         interface=RegAladin(),
         name="align_b0mean_on_T2_2")
@@ -210,30 +229,33 @@ def create_short_preparation_MD_pipe(params,
                         compose_transfo, "comp_input")
 
     # apply transfo to MD
-    align_MD_on_T2_with_b0 = pe.Node(RegResample(pad_val=0.0),
-        name="align_MD_on_T2_with_b0")
+    align_MD_on_T2_with_b0_2 = pe.Node(RegResample(pad_val=0.0),
+        name="align_MD_on_T2_with_b0_2")
 
     # transfo
     data_preparation_pipe.connect(
         compose_transfo, 'out_file',
-        align_MD_on_T2_with_b0, 'trans_file')
+        align_MD_on_T2_with_b0_2, 'trans_file')
 
     data_preparation_pipe.connect(
         inputnode, 'MD',
-        align_MD_on_T2_with_b0, "flo_file")
+        align_MD_on_T2_with_b0_2, "flo_file")
 
     data_preparation_pipe.connect(
         inputnode, 'SS_T2',
-        align_MD_on_T2_with_b0, "ref_file")
+        align_MD_on_T2_with_b0_2, "ref_file")
 
     # Creating output node
     outputnode = pe.Node(
         niu.IdentityInterface(
-            fields=['coreg_MD']),
+            fields=['coreg_MD', 'coreg_better_MD']),
         name='outputnode')
 
     # outputnode
     data_preparation_pipe.connect(align_MD_on_T2_with_b0, 'out_file',
+                                  outputnode, 'coreg_better_MD')
+
+    data_preparation_pipe.connect(align_MD_on_T2_with_b0_2, 'out_file',
                                   outputnode, 'coreg_better_MD')
 
     return data_preparation_pipe

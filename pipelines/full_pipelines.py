@@ -253,10 +253,19 @@ def create_transfo_MD_pipe(params_template, params={},
     transfo_pipe.connect(inputnode, 'lin_transfo_file',
                          norm_lin_MD, 'in_matrix_file')
 
+    # apply norm to coreg_better_MD
+    norm_lin_better_MD = pe.Node(fsl.ApplyXFM(), name="norm_lin_better_MD")
+    norm_lin_better_MD.inputs.reference = params_template["template_brain"]
+
+    transfo_pipe.connect(data_preparation_pipe, 'outputnode.coreg_better_MD',
+                         norm_lin_better_MD, 'in_file')
+    transfo_pipe.connect(inputnode, 'lin_transfo_file',
+                         norm_lin_better_MD, 'in_matrix_file')
+
     # Creating output node
     outputnode = pe.Node(
         niu.IdentityInterface(
-            fields=['coreg_MD', 'norm_MD']),
+            fields=['coreg_MD', 'norm_MD', 'coreg_better_MD', 'norm_better_MD']),
         name='outputnode'
     )
 
@@ -264,8 +273,13 @@ def create_transfo_MD_pipe(params_template, params={},
     transfo_pipe.connect(data_preparation_pipe, 'outputnode.coreg_MD',
                          outputnode, 'coreg_MD')
 
+    transfo_pipe.connect(data_preparation_pipe, 'outputnode.coreg_better_MD',
+                         outputnode, 'coreg_better_MD')
+
     # norm
     transfo_pipe.connect(norm_lin_MD, 'out_file',
                          outputnode, 'norm_MD')
 
+    transfo_pipe.connect(norm_lin_better_MD, 'out_file',
+                         outputnode, 'norm_better_MD')
     return transfo_pipe

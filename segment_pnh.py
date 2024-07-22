@@ -576,12 +576,12 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
         if 'md' in lesion_dt:
 
             main_workflow.connect(
-                transfo_MD_pipe, 'outputnode.coreg_MD',
-                datasink, '@coreg_MD')
+                transfo_MD_pipe, 'outputnode.coreg_better_MD',
+                datasink, '@coreg_better_MD')
 
             main_workflow.connect(
-                transfo_MD_pipe, 'outputnode.norm_MD',
-                datasink, '@norm_MD')
+                transfo_MD_pipe, 'outputnode.norm_better_MD',
+                datasink, '@norm_better_MD')
 
     # running main_workflow
     main_workflow.write_graph(graph2use="colored")
