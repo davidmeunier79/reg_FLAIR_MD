@@ -566,6 +566,10 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
         if 'flair' in lesion_dt:
 
             main_workflow.connect(
+                transfo_FLAIR_pipe, 'outputnode.coreg_FLAIR',
+                datasink, '@coreg_flair')
+
+            main_workflow.connect(
                 transfo_FLAIR_pipe, 'outputnode.norm_FLAIR',
                 datasink, '@norm_flair')
 
