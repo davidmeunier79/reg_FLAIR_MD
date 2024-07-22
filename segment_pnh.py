@@ -58,7 +58,7 @@ from macapype.pipelines.full_pipelines import (
     create_full_ants_subpipes,
     create_full_T1_ants_subpipes)
 
-from .pipelines.full_pipelines import (
+from pipelines.full_pipelines import (
     create_transfo_FLAIR_pipe,
     create_transfo_MD_pipe)
 
