@@ -82,7 +82,7 @@ def create_short_preparation_FLAIR_pipe(params,
 
         align_FLAIR_on_T1 = pe.Node(
             interface=RegAladin(),
-            name="align_ct_on_T1")
+            name="align_FLAIR_on_T1")
 
         # TODO
         # align_FLAIR_on_T1 = pe.Node(reg.RegAladin(),
