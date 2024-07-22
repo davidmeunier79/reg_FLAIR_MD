@@ -253,7 +253,7 @@ def create_short_preparation_MD_pipe(params,
 
     # outputnode
     data_preparation_pipe.connect(align_MD_on_T2_with_b0, 'out_file',
-                                  outputnode, 'coreg_better_MD')
+                                  outputnode, 'coreg_MD')
 
     data_preparation_pipe.connect(align_MD_on_T2_with_b0_2, 'out_file',
                                   outputnode, 'coreg_better_MD')
