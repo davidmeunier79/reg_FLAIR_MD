@@ -250,10 +250,10 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
     wf_name += "_{}".format(soft)
 
     if 'md' in lesion_dt:
-        wf_name += "_angio"
+        wf_name += "_md"
 
     if 'flair' in lesion_dt:
-        wf_name += "_CT"
+        wf_name += "_flair"
 
     if len(brain_dt) != 0:
         wf_name += "_segbrain"
@@ -572,7 +572,7 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
         if 'md' in lesion_dt:
 
             main_workflow.connect(
-                transfo_FLAIR_pipe, 'outputnode.norm_better_MD',
+                transfo_MD_pipe, 'outputnode.norm_better_MD',
                 datasink, '@norm_better_MD')
 
     # running main_workflow
