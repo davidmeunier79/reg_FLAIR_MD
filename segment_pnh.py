@@ -56,7 +56,9 @@ import nipype.interfaces.fsl as fsl
 from macapype.pipelines.full_pipelines import (
     create_full_spm_subpipes,
     create_full_ants_subpipes,
-    create_full_T1_ants_subpipes,
+    create_full_T1_ants_subpipes)
+
+from .pipelines.full_pipelines import (
     create_transfo_FLAIR_pipe,
     create_transfo_MD_pipe)
 
@@ -70,7 +72,7 @@ from macapype.utils.utils_tests import load_test_data, format_template
 
 from macapype.utils.utils_params import update_params
 
-from macapype.utils.misc import show_files, get_first_elem, parse_key
+from macapype.utils.misc import get_first_elem, parse_key
 
 fsl.FSLCommand.set_default_output_type('NIFTI_GZ')
 ###############################################################################

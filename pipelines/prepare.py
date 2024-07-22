@@ -7,7 +7,7 @@ import nipype.interfaces.fsl as fsl
 from macapype.utils.utils_nodes import NodeParams
 from macapype.utils.misc import parse_key
 
-from macapype.nodes.prepare import reg_aladin_dirty
+from nodes.prepare import reg_aladin_dirty
 
 
 ###############################################################################
