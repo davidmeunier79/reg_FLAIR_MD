@@ -92,7 +92,7 @@ def create_short_preparation_FLAIR_pipe(params,
 
         align_FLAIR_on_T1_2 = pe.Node(
             interface=RegAladin(),
-            name="align_FLAIR_on_T1")
+            name="align_FLAIR_on_T1_2")
 
         data_preparation_pipe.connect(inputnode, 'orig_T1',
                                       align_FLAIR_on_T1_2, 'ref_file')
