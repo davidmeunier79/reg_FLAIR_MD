@@ -450,9 +450,6 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
             output_query, data_dir, subjects,  sessions, acquisitions,
             reconstructions)
 
-    main_workflow.connect(datasource, 'T1',
-                          segment_pnh_pipe, 'inputnode.list_T1')
-
     if "t1" in brain_dt:
         main_workflow.connect(datasource, 'T1',
                               segment_pnh_pipe, 'inputnode.list_T1')
