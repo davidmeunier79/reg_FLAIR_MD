@@ -79,7 +79,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI_GZ')
 
 
 def create_main_workflow(data_dir, process_dir, soft, species, subjects,
-                         sessions,  brain_dt, skull_dt, acquisitions,
+                         sessions,  brain_dt, lesion_dt, acquisitions,
                          reconstructions, params_file,
                          indiv_params_file, mask_file, template_path,
                          template_files, nprocs, reorient, deriv, pad,
