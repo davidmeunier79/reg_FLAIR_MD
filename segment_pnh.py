@@ -549,6 +549,12 @@ def create_main_workflow(data_dir, process_dir, soft, species, subjects,
                 transfo_FLAIR_pipe, 'outputnode.norm_FLAIR',
                 datasink, '@norm_flair')
 
+        if 'md' in ssoft:
+
+            main_workflow.connect(
+                transfo_FLAIR_pipe, 'outputnode.norm_better_MD',
+                datasink, '@norm_better_MD')
+
     # running main_workflow
     main_workflow.write_graph(graph2use="colored")
     main_workflow.config['execution'] = {'remove_unnecessary_outputs': 'false'}
