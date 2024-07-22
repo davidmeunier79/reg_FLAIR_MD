@@ -93,6 +93,20 @@ def create_short_preparation_FLAIR_pipe(params,
 
         data_preparation_pipe.connect(inputnode, 'FLAIR',
                                       align_FLAIR_on_T1, 'flo_file')
+
+        align_FLAIR_on_T1_2 = pe.Node(
+            interface=RegAladin(),
+            name="align_FLAIR_on_T1")
+
+        # TODO
+        # align_FLAIR_on_T1 = pe.Node(reg.RegAladin(),
+        # name="reg_aladin_FLAIR_on_T1")
+
+        data_preparation_pipe.connect(inputnode, 'orig_T1',
+                                      align_FLAIR_on_T1_2, 'ref_file')
+
+        data_preparation_pipe.connect(align_FLAIR_on_T1, 'res_file',
+                                      align_FLAIR_on_T1_2, 'flo_file')
     else:
         print("no align_FLAIR_on_T1 or reg_aladin_FLAIR_on_T1, breaking")
         exit(0)
@@ -103,8 +117,8 @@ def create_short_preparation_FLAIR_pipe(params,
             fields=['coreg_FLAIR']),
         name='outputnode')
 
-    data_preparation_pipe.connect(align_FLAIR_on_T1, 'res_file',
-                                  outputnode, 'coreg_FLAIR')
+        data_preparation_pipe.connect(align_FLAIR_on_T1_2, 'res_file',
+                                      outputnode, 'coreg_FLAIR')
 
     return data_preparation_pipe
 
